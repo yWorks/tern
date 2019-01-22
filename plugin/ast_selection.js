@@ -238,7 +238,7 @@
         result = walk.findNodeAround(file.ast, startPos);
       }
 
-      if (result && result.node.type.toLowerCase().indexOf("expression") >= 0) {
+      if (result && (result.node.type.toLowerCase().indexOf("expression") >= 0 || result.node.type === "Literal")) {
         return {start: result.node.start, end: result.node.end};
       }
     }
