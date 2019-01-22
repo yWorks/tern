@@ -48,7 +48,7 @@
                 continue;
               }
               var callee = callExpression.callee;
-              var scope = infer.scopeAt(file.ast, callee.end);
+              var scope = infer.scopeAt(file.ast, callee.end, file.scope);
               if (scope){
                 var type = infer.expressionType({node:callee, state:scope}).getFunctionType();
                 if (type){
@@ -100,7 +100,7 @@
                 continue;
               }
               var left = assignment.left;
-              var scope = infer.scopeAt(file.ast, assignment.end);
+              var scope = infer.scopeAt(file.ast, assignment.end, file.scope);
               if (scope){
                 var type;
                 if (left.type == "MemberExpression"){
@@ -144,7 +144,7 @@
 
               var property = stack[i];
               callee = stack[i - 2].callee;
-              scope = infer.scopeAt(file.ast, callee.end);
+              scope = infer.scopeAt(file.ast, callee.end, file);
               if (scope) {
                 type = infer.expressionType({node: callee, state: scope}).getFunctionType();
 
@@ -184,7 +184,7 @@
       var startPos = tern.resolvePos(file, query.start);
       var names = query.types;
 
-      var scope = infer.scopeAt(file.ast, endPos);
+      var scope = infer.scopeAt(file.ast, endPos, file.scope);
       var result = [];
       if (scope) {
         var type;
