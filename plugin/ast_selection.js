@@ -76,18 +76,20 @@
                     pos = callExpression.arguments.length;
                   }
                   if (type.args.length > pos){
-                    var typeObject = {};
+                    var typeString = {};
                     if (type.args[pos] instanceof infer.Fn){
-                      typeObject = "function(";
+                      typeString = "function(";
                       for (var k = 0; k < type.args[pos].argNames.length; k++){
                         if (k > 0){
-                          typeObject += ",";
+                          typeString += ",";
                         }
-                        typeObject += type.args[pos].argNames[k];
+                        typeString += type.args[pos].argNames[k];
                       }
-                      typeObject += "){}";
+                      typeString += "){}";
                     } else if (type.args[pos].name){
-                      typeObject = type.args[pos].name;
+                      typeString = type.args[pos].name;
+                    } else if(type.args[pos].types) {
+                      typeString = type.args[pos].types.map(function (type) {return type.name}).join("|");
                     }
 
                     if (callExpression.arguments && callExpression.arguments.length > pos){
@@ -95,12 +97,12 @@
                       if (argument.name && argument.name.length == 1 && argument.name.charCodeAt(0) == 10006){
                         // unknown/empty argument
                         // length can be -1 in length in case of missing argument
-                        return { type: typeObject, start: argument.end - 1, end:argument.end - 1};
+                        return { type: typeString, start: argument.end - 1, end:argument.end - 1};
                       } else {
-                        return { type: typeObject, start: Math.min(argument.start, argument.end), end:Math.max(argument.end, argument.start)};
+                        return { type: typeString, start: Math.min(argument.start, argument.end), end:Math.max(argument.end, argument.start)};
                       }
                     } else {
-                      return { type: typeObject, start: callExpression.end - 1, end: callExpression.end - 1};
+                      return { type: typeString, start: callExpression.end - 1, end: callExpression.end - 1};
                     }
                   }
                 }
