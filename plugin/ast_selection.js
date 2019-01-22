@@ -223,4 +223,25 @@
       })};
     }
   });
+
+  tern.defineQueryType("find_surrounding_expression", {
+    takesFile: true,
+    run: function (server, query, file) {
+      var startPos = tern.resolvePos(file, query.start);
+      var endPos = tern.resolvePos(file, query.end);
+
+      var result;
+      if (endPos > startPos) {
+        result = walk.findNodeAt(file.ast, startPos, endPos);
+      }
+      if (!result || endPos === startPos) {
+        result = walk.findNodeAround(file.ast, startPos);
+      }
+
+      if (result && result.node.type.toLowerCase().indexOf("expression") >= 0) {
+        return {start: result.node.start, end: result.node.end};
+      }
+    }
+  });
+
 });
