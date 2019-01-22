@@ -144,7 +144,7 @@
 
               var property = stack[i];
               callee = stack[i - 2].callee;
-              scope = infer.scopeAt(file.ast, callee.end, file);
+              scope = infer.scopeAt(file.ast, callee.end, file.scope);
               if (scope) {
                 type = infer.expressionType({node: callee, state: scope}).getFunctionType();
 
