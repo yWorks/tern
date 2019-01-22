@@ -148,6 +148,34 @@
             case "MemberExpression":
                 // that's ok - iterate
               break;
+            case "Property":
+              // parameter objects
+              if (!(i - 2 >= 0
+                  && stack[i - 1].type === "ObjectExpression"
+                  && (stack[i - 2].type === "CallExpression" || stack[i - 2].type === "NewExpression"))) {
+                return {}
+              }
+
+              var property = stack[i];
+              callee = stack[i - 2].callee;
+              scope = infer.scopeAt(file.ast, callee.end);
+              if (scope) {
+                type = infer.expressionType({node: callee, state: scope}).getFunctionType();
+
+                var argIndex = type.argNames.indexOf(property.key.name);
+                if (argIndex < 0) {
+                  // optional args
+                  argIndex = type.argNames.indexOf(property.key.name + "?");
+                }
+
+                return {
+                  type: type.args[argIndex].name,
+                  start: tern.resolvePos(file, query.start),
+                  end: end
+                }
+              }
+              break;
+
             default:
                 // not ok - just stop here.
               return {}
@@ -243,6 +271,38 @@
       if (result && (result.node.type.toLowerCase().indexOf("expression") >= 0 || result.node.type === "Literal")) {
         return {start: result.node.start, end: result.node.end};
       }
+    }
+  });
+
+  tern.defineQueryType("find_object_completion_method", {
+    takesFile: true,
+    run: function(server, query, file) {
+      var startPos = tern.resolvePos(file, query.start);
+
+      var result = walk.findNodeAround(file.ast, startPos);
+
+      if (!result) {
+        return;
+      }
+
+      // find the end of the method name
+      var pos = result.node.start - 1;
+      while (pos >= 0 && !/[\w$]/.test(file.text.charAt(pos - 1))) pos--;
+
+      var currentProperty = walk.findNodeAround(file.ast, tern.resolvePos(file, query.cursorPos));
+      currentProperty = currentProperty && currentProperty.node.type === "Identifier" ? currentProperty.node.name : null;
+
+      // extract all parameters already there
+      var properties = result.node.properties.map(function (property) {
+        return property.key.name
+      }).filter(function (property) {
+        return property !== currentProperty;
+      });
+
+      return {
+        pos: pos,
+        properties: properties
+      };
     }
   });
 
