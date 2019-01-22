@@ -88,7 +88,7 @@
                         return { type: typeString, start: Math.min(argument.start, argument.end), end:Math.max(argument.end, argument.start)};
                       }
                     } else {
-                      return { type: typeString, start: callExpression.end - 1, end: callExpression.end - 1};
+                      return { type: typeString, start: callExpression.end - 1, end: callExpression.end - 1, isFirstArg: pos === 0};
                     }
                   }
                 }
