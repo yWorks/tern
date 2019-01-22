@@ -76,21 +76,7 @@
                     pos = callExpression.arguments.length;
                   }
                   if (type.args.length > pos){
-                    var typeString = {};
-                    if (type.args[pos] instanceof infer.Fn){
-                      typeString = "function(";
-                      for (var k = 0; k < type.args[pos].argNames.length; k++){
-                        if (k > 0){
-                          typeString += ",";
-                        }
-                        typeString += type.args[pos].argNames[k];
-                      }
-                      typeString += "){}";
-                    } else if (type.args[pos].name){
-                      typeString = type.args[pos].name;
-                    } else if(type.args[pos].types) {
-                      typeString = type.args[pos].types.map(function (type) {return type.name}).join("|");
-                    }
+                    var typeString = serializeParameterType(type.args[pos]);
 
                     if (callExpression.arguments && callExpression.arguments.length > pos){
                       var argument = callExpression.arguments[pos];
@@ -168,8 +154,12 @@
                   argIndex = type.argNames.indexOf(property.key.name + "?");
                 }
 
+                if (argIndex < 0) {
+                  return {};
+                }
+
                 return {
-                  type: type.args[argIndex].name,
+                  type: serializeParameterType(type.args[argIndex]),
                   start: tern.resolvePos(file, query.start),
                   end: end
                 }
@@ -306,4 +296,31 @@
     }
   });
 
+  function serializeParameterType(parameter) {
+    var typeString = "";
+    if (parameter instanceof infer.Fn) {
+      typeString = serializeFunctionType(parameter);
+    } else if (parameter.name) {
+      typeString = parameter.name;
+    } else if (parameter.types) {
+      typeString = parameter.types.map(function (type) {
+        return type.name
+      }).join("|");
+    }
+
+    return typeString;
+  }
+
+  function serializeFunctionType(type) {
+    var typeString = "function(";
+    for (var k = 0; k < type.argNames.length; k++){
+      if (k > 0){
+        typeString += ",";
+      }
+      typeString += type.argNames[k];
+    }
+    typeString += "){}";
+
+    return typeString
+  }
 });
