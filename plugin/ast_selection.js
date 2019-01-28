@@ -187,7 +187,6 @@
       var scope = infer.scopeAt(file.ast, endPos, file.scope);
       var result = [];
       if (scope) {
-        var type;
         for (var propName in scope.props){
           var prop = scope.props[propName];
           if (prop && prop.getType){
@@ -195,7 +194,11 @@
             if (type && type.name){
               var match = type.name.match(/(.*)\.prototype$/); // strip prototype...
               if (match ? names[match[1]] : names[type.name]) {
-                result.push(propName);
+                result.push({
+                  name: propName,
+                  type: type.name,
+                  doc: type.doc
+                });
               }
             }
           }
